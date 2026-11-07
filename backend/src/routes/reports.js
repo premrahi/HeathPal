@@ -5,6 +5,8 @@ import { requireAuth } from '../middleware/auth.js';
 import { reportUpload, checkUploadedFile } from '../middleware/upload.js';
 import { ApiError } from '../lib/errors.js';
 import { z, parse, pagination, idParam } from '../lib/validation.js';
+import { analyzeReport } from '../services/analysis.js';
+import { config } from '../config/env.js';
 
 export const reportsRouter = Router();
 reportsRouter.use(requireAuth);
@@ -44,3 +46,30 @@ reportsRouter.delete('/:id', idParam, async (req, res) => {
   if (!result.deletedCount) throw new ApiError(404, 'Report not found.');
   res.json({ message: 'Report and its file deleted.' });
 });
+
+reportsRouter.post('/:id/analyze', idParam,
+  rateLimit({ windowMs: 60000, limit: 3, keyGenerator: req => req.user._id.toString(), legacyHeaders: false,
+    message: { message: 'Please wait before requesting more analyses.' } }), async (req, res) => {
+    parse(z.object({ consent: z.literal(true, 'Consent is required to send this report to Google Gemini.') }), req.body);
+    if (!config.geminiKey) throw new ApiError(503, 'AI analysis is not configured. Your report is still saved.');
+    const report = await Report.findOneAndUpdate({ _id: req.params.id, user: req.user._id,
+      $or: [{ status: { $ne: 'analyzing' } }, { updatedAt: { $lt: new Date(Date.now() - 120000) } }] },
+    { $set: { status: 'analyzing', analysisError: '' } }, { new: true }).select('+fileData');
+    if (!report) {
+      if (!await Report.exists({ _id: req.params.id, user: req.user._id })) throw new ApiError(404, 'Report not found.');
+      throw new ApiError(409, 'Analysis is already running. Please refresh shortly.');
+    }
+    try {
+      const result = await analyzeReport(report);
+      const updated = await Report.findOneAndUpdate({ _id: report._id, user: req.user._id }, { $set: {
+        status: result.is_medical_report ? 'ready' : 'not_medical', analyzedAt: new Date(),
+        analysis: { summary: result.summary, english: result.english, romanUrdu: result.romanUrdu, questions: result.questions },
+        analysisError: result.is_medical_report ? '' : 'This file could not be identified as a medical report.',
+      } }, { new: true });
+      if (!updated) throw new ApiError(404, 'Report was deleted during analysis.');
+      res.json({ report: updated });
+    } catch (error) {
+      await Report.updateOne({ _id: report._id, user: req.user._id }, { $set: { status: 'failed', analysisError: 'Analysis was unsuccessful. Please try again.' } });
+      throw error;
+    }
+  });
