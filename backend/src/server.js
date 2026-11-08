@@ -2,10 +2,13 @@ import 'dotenv/config';
 import mongoose from 'mongoose';
 import { app } from './app.js';
 import { connectDatabase } from './config/database.js';
+import { config, validateEnvironment } from './config/env.js';
 
 try {
-  await connectDatabase(process.env.MONGO_URI);
-  const port = Number(process.env.PORT) || 5000;
+  validateEnvironment();
+  await connectDatabase(config.mongoUri);
+  const port = config.port;
+  if (config.mailMode === 'console') console.log('Development email codes are printed in this terminal.');
   const server = app.listen(port, () => console.log(`API listening on http://localhost:${port}`));
   server.on('error', async (error) => {
     console.error('HTTP startup failed:', error.message);

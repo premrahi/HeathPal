@@ -6,3 +6,6 @@ dist/
 coverage/
 *.log
 HealthMate-Ai-Integration/
+test-results/
+playwright-report/
+.cache/

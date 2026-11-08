@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import mongoose from 'mongoose';
+import { config } from '../config/env.js';
 
 export const healthRouter = Router();
 healthRouter.get('/', (_req, res) => {
@@ -8,5 +9,7 @@ healthRouter.get('/', (_req, res) => {
     status: connected ? 'ok' : 'unavailable',
     service: 'HealthPal API',
     database: connected ? 'connected' : 'disconnected',
+    aiEnabled: Boolean(config.geminiKey),
+    developmentMail: !config.production && config.mailMode === 'console',
   });
 });
