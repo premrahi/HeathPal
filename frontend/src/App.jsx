@@ -1,68 +1,55 @@
-import { useEffect, useState } from 'react';
+import { Component, useEffect, useState } from 'react';
+import { BrowserRouter, Routes, Route, Navigate, Outlet, NavLink, Link, useLocation } from 'react-router-dom';
+import { Activity, LayoutDashboard, FileText, Sparkles, UserRound, Settings, LogOut, Menu, X, Plus } from 'lucide-react';
+import { AuthProvider, useAuth } from './context/AuthContext';
+import { ToastProvider, useToast } from './context/ToastContext';
+import { Loading, ErrorMessage, Empty, ButtonLink, Button } from './components/UI';
+import Home from './pages/Home';
 
-const features = [
-  { number: '01', title: 'Your health profile', description: 'One place for the details that make your care personal.' },
-  { number: '02', title: 'Medical reports', description: 'Keep your reports organized and easy to find.' },
-  { number: '03', title: 'Vitals tracking', description: 'Follow everyday measurements and see changes over time.' },
+export function Brand() { return <Link to="/" className="brand" aria-label="HealthPal home"><span className="brand-icon"><Plus size={25} /></span>HealthPal<span className="brand-dot">.</span></Link>; }
+function RouteFocus() {
+  const { pathname } = useLocation();
+  useEffect(() => { document.title = `${pathname.split('/').filter(Boolean).at(-1)?.replaceAll('-', ' ') || 'Your health, together'} | HealthPal`; window.scrollTo(0, 0); document.getElementById('main')?.focus({ preventScroll: true }); }, [pathname]);
+  return null;
+}
+function Protected() {
+  const { user, loading, error, refresh } = useAuth();
+  const location = useLocation();
+  if (loading) return <Loading />;
+  if (error) return <div className="center-card"><ErrorMessage error={error} retry={refresh} /></div>;
+  return user ? <Outlet /> : <Navigate to="/login" state={{ from: location.pathname }} replace />;
+}
+const navigation = [
+  ['dashboard', 'Overview', LayoutDashboard], ['reports', 'Medical reports', FileText],
+  ['vitals', 'Vitals tracker', Activity], ['insights', 'AI insights', Sparkles],
+  ['profile', 'My profile', UserRound], ['settings', 'Account settings', Settings],
 ];
-
+function Workspace() {
+  const { user, logout } = useAuth();
+  const toast = useToast();
+  const [open, setOpen] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const { pathname } = useLocation();
+  useEffect(() => { setOpen(false); }, [pathname]);
+  async function signOut() { setBusy(true); try { await logout(); toast('You have been signed out.'); } catch (error) { toast(error.message); } finally { setBusy(false); } }
+  return <div className="workspace"><a className="skip-link" href="#main">Skip to content</a>
+    <header className="mobile-header"><Brand /><button className="icon-button" aria-label={open ? 'Close navigation' : 'Open navigation'} aria-expanded={open} aria-controls="sidebar" onClick={() => setOpen(!open)}>{open ? <X /> : <Menu />}</button></header>
+    <aside id="sidebar" className={`sidebar ${open ? 'is-open' : ''}`}><div className="sidebar-brand"><Brand /></div><p className="nav-label">YOUR HEALTH SPACE</p><nav aria-label="Main navigation">{navigation.map(([path, label, Icon]) => <NavLink key={path} to={`/app/${path}`}><Icon size={19} />{label}</NavLink>)}</nav><div className="sidebar-note"><span className="eyebrow">Small steps, every day</span><p>Your health story deserves a little clarity.</p><span>Keep it all together.</span></div><div className="sidebar-user"><span className="avatar">{user.name.slice(0, 1).toUpperCase()}</span><div><strong>{user.name}</strong><small>{user.email}</small></div><button className="icon-button" onClick={signOut} disabled={busy} aria-label="Sign out"><LogOut size={18} /></button></div></aside>
+    <div className="workspace-main"><header className="workspace-topbar"><span>Your personal health companion</span><span className="privacy-pill">Private workspace</span></header><main id="main" tabIndex={-1} className="content"><Outlet /></main><footer className="workspace-footer">HealthPal · One step toward a clearer health story.</footer></div>
+  </div>;
+}
+function Pending() { return <Empty title="Your health space" description="This module is being connected to your account." />; }
+function NotFound() { return <div className="center-card"><Empty title="This page wandered off." description="Let’s get you back to your health space."><ButtonLink to="/">Back home</ButtonLink></Empty></div>; }
+class ErrorBoundary extends Component {
+  state = { failed: false };
+  static getDerivedStateFromError() { return { failed: true }; }
+  render() { return this.state.failed ? <div className="center-card"><h1>Something went wrong.</h1><p>Please reload the app to try again.</p><Button onClick={() => window.location.reload()}>Reload app</Button></div> : this.props.children; }
+}
 export default function App() {
-  const [status, setStatus] = useState('Checking connection');
-  const [checking, setChecking] = useState(false);
-
-  async function checkConnection(signal) {
-    setChecking(true);
-    try {
-      const response = await fetch('/api/health', { signal });
-      const data = await response.json();
-      setStatus(response.ok && data.database === 'connected' ? 'API & database connected' : 'Database unavailable');
-    } catch (error) {
-      if (error.name !== 'AbortError') setStatus('API offline — start the backend');
-    } finally {
-      if (!signal?.aborted) setChecking(false);
-    }
-  }
-
-  useEffect(() => {
-    const controller = new AbortController();
-    checkConnection(controller.signal);
-    return () => controller.abort();
-  }, []);
-
-  return (
-    <div className="page">
-      <header className="header">
-        <a className="brand" href="#home" aria-label="HealthPal home"><span className="brand-icon">+</span>HealthPal<span className="brand-dot">.</span></a>
-        <span className="tag">MERN starter</span>
-      </header>
-      <main id="home">
-        <section className="hero">
-          <div className="hero-copy">
-            <p className="eyebrow">A little clarity. Better care.</p>
-            <h1>Your health,<br /><span>all together.</span></h1>
-            <p className="intro">The beginning of a simpler way to organize your health. A clean foundation for your profile, reports, and everyday wellbeing.</p>
-            <a className="button" href="#foundation">Explore the foundation <span aria-hidden="true">↗</span></a>
-            <p className="fine-print">Development scaffold · Features are planned</p>
-          </div>
-          <aside className="connection-card" aria-labelledby="connection-title">
-            <div className="card-heading"><span className="eyebrow">System overview</span><span className="small-cross" aria-hidden="true">✚</span></div>
-            <h2 id="connection-title">Ready to grow.</h2>
-            <p>Your application starts with four building blocks.</p>
-            <dl className="stack">
-              <div><dt>MongoDB</dt><dd>Database</dd></div>
-              <div><dt>Express</dt><dd>API layer</dd></div>
-              <div><dt>React</dt><dd>Interface</dd></div>
-              <div><dt>Node.js</dt><dd>Runtime</dd></div>
-            </dl>
-            <div className="connection"><p role="status"><span className={status.includes('connected') ? 'dot online' : 'dot'} />{status}</p><button onClick={() => checkConnection()} disabled={checking}>{checking ? 'Checking…' : 'Retry'}</button></div>
-          </aside>
-        </section>
-        <section className="foundation" id="foundation" aria-labelledby="foundation-title">
-          <div className="section-heading"><div><p className="eyebrow">The next steps</p><h2 id="foundation-title">Space for what matters.</h2></div><span className="planned-label">Planned modules</span></div>
-          <div className="features">{features.map(feature => <article className="feature" key={feature.number}><span className="feature-number">{feature.number}</span><h3>{feature.title}</h3><p>{feature.description}</p><span className="feature-status">Coming in a future milestone</span></article>)}</div>
-        </section>
-      </main>
-      <footer><span>HealthPal · Built one step at a time.</span><span>MongoDB / Express / React / Node.js</span></footer>
-    </div>
-  );
+  return <ErrorBoundary><BrowserRouter><ToastProvider><AuthProvider><RouteFocus /><Routes>
+    <Route path="/" element={<Home />} />
+    {['login', 'signup', 'verify-email', 'forgot-password', 'reset-password'].map(path => <Route key={path} path={`/${path}`} element={<Pending />} />)}
+    <Route element={<Protected />}><Route path="/app" element={<Workspace />}><Route index element={<Navigate to="dashboard" replace />} />{navigation.map(([path]) => <Route key={path} path={path} element={<Pending />} />)}<Route path="reports/:id" element={<Pending />} /></Route></Route>
+    <Route path="*" element={<NotFound />} />
+  </Routes></AuthProvider></ToastProvider></BrowserRouter></ErrorBoundary>;
 }
