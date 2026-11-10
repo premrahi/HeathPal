@@ -5,6 +5,7 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import { ToastProvider, useToast } from './context/ToastContext';
 import { Loading, ErrorMessage, Empty, ButtonLink, Button } from './components/UI';
 import Home from './pages/Home';
+import Auth from './pages/Auth';
 
 export function Brand() { return <Link to="/" className="brand" aria-label="HealthPal home"><span className="brand-icon"><Plus size={25} /></span>HealthPal<span className="brand-dot">.</span></Link>; }
 function RouteFocus() {
@@ -48,7 +49,9 @@ class ErrorBoundary extends Component {
 export default function App() {
   return <ErrorBoundary><BrowserRouter><ToastProvider><AuthProvider><RouteFocus /><Routes>
     <Route path="/" element={<Home />} />
-    {['login', 'signup', 'verify-email', 'forgot-password', 'reset-password'].map(path => <Route key={path} path={`/${path}`} element={<Pending />} />)}
+    <Route path="/login" element={<Auth key="login" mode="login" />} />
+    <Route path="/signup" element={<Auth key="signup" mode="signup" />} />
+    {['verify-email', 'forgot-password', 'reset-password'].map(path => <Route key={path} path={`/${path}`} element={<Pending />} />)}
     <Route element={<Protected />}><Route path="/app" element={<Workspace />}><Route index element={<Navigate to="dashboard" replace />} />{navigation.map(([path]) => <Route key={path} path={path} element={<Pending />} />)}<Route path="reports/:id" element={<Pending />} /></Route></Route>
     <Route path="*" element={<NotFound />} />
   </Routes></AuthProvider></ToastProvider></BrowserRouter></ErrorBoundary>;
