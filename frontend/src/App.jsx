@@ -6,6 +6,8 @@ import { ToastProvider, useToast } from './context/ToastContext';
 import { Loading, ErrorMessage, Empty, ButtonLink, Button } from './components/UI';
 import Home from './pages/Home';
 import Auth from './pages/Auth';
+import Recovery from './pages/Recovery';
+import SettingsPage from './pages/Settings';
 
 export function Brand() { return <Link to="/" className="brand" aria-label="HealthPal home"><span className="brand-icon"><Plus size={25} /></span>HealthPal<span className="brand-dot">.</span></Link>; }
 function RouteFocus() {
@@ -51,8 +53,10 @@ export default function App() {
     <Route path="/" element={<Home />} />
     <Route path="/login" element={<Auth key="login" mode="login" />} />
     <Route path="/signup" element={<Auth key="signup" mode="signup" />} />
-    {['verify-email', 'forgot-password', 'reset-password'].map(path => <Route key={path} path={`/${path}`} element={<Pending />} />)}
-    <Route element={<Protected />}><Route path="/app" element={<Workspace />}><Route index element={<Navigate to="dashboard" replace />} />{navigation.map(([path]) => <Route key={path} path={path} element={<Pending />} />)}<Route path="reports/:id" element={<Pending />} /></Route></Route>
+    <Route path="/verify-email" element={<Recovery key="verify" mode="verify" />} />
+    <Route path="/forgot-password" element={<Recovery key="forgot" mode="forgot" />} />
+    <Route path="/reset-password" element={<Recovery key="reset" mode="reset" />} />
+    <Route element={<Protected />}><Route path="/app" element={<Workspace />}><Route index element={<Navigate to="dashboard" replace />} />{navigation.map(([path]) => <Route key={path} path={path} element={path === 'settings' ? <SettingsPage /> : <Pending />} />)}<Route path="reports/:id" element={<Pending />} /></Route></Route>
     <Route path="*" element={<NotFound />} />
   </Routes></AuthProvider></ToastProvider></BrowserRouter></ErrorBoundary>;
 }
