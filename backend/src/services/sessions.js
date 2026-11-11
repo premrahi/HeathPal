@@ -12,5 +12,5 @@ export async function createSession(user, res) {
 }
 export function clearSessionCookie(res) { res.clearCookie(cookieName, cookieOptions); }
 export function publicUser(user) {
-  return { _id: user._id, name: user.name, email: user.email, verifiedAt: user.verifiedAt, profile: user.profile, createdAt: user.createdAt };
+  return { _id: user._id, name: user.name, email: user.email, verifiedAt: user.verifiedAt, profile: user.profile, createdAt: user.createdAt, avatarUpdatedAt: user.avatarUpdatedAt };
 }

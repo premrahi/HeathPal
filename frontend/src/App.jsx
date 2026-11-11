@@ -9,6 +9,7 @@ import Auth from './pages/Auth';
 import Recovery from './pages/Recovery';
 import SettingsPage from './pages/Settings';
 import Dashboard from './pages/Dashboard';
+import Profile from './pages/Profile';
 
 export function Brand() { return <Link to="/" className="brand" aria-label="HealthPal home"><span className="brand-icon"><Plus size={25} /></span>HealthPal<span className="brand-dot">.</span></Link>; }
 function RouteFocus() {
@@ -57,7 +58,7 @@ export default function App() {
     <Route path="/verify-email" element={<Recovery key="verify" mode="verify" />} />
     <Route path="/forgot-password" element={<Recovery key="forgot" mode="forgot" />} />
     <Route path="/reset-password" element={<Recovery key="reset" mode="reset" />} />
-    <Route element={<Protected />}><Route path="/app" element={<Workspace />}><Route index element={<Navigate to="dashboard" replace />} />{navigation.map(([path]) => <Route key={path} path={path} element={path === 'settings' ? <SettingsPage /> : path === 'dashboard' ? <Dashboard /> : <Pending />} />)}<Route path="reports/:id" element={<Pending />} /></Route></Route>
+    <Route element={<Protected />}><Route path="/app" element={<Workspace />}><Route index element={<Navigate to="dashboard" replace />} />{navigation.map(([path]) => <Route key={path} path={path} element={path === 'settings' ? <SettingsPage /> : path === 'dashboard' ? <Dashboard /> : path === 'profile' ? <Profile /> : <Pending />} />)}<Route path="reports/:id" element={<Pending />} /></Route></Route>
     <Route path="*" element={<NotFound />} />
   </Routes></AuthProvider></ToastProvider></BrowserRouter></ErrorBoundary>;
 }

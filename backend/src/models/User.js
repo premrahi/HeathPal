@@ -5,6 +5,9 @@ const userSchema = new mongoose.Schema({
   email: { type: String, required: true, unique: true, lowercase: true, trim: true },
   passwordHash: { type: String, required: true, select: false },
   verifiedAt: { type: Date, default: null },
+  avatarData: { type: Buffer, select: false },
+  avatarMime: { type: String, select: false },
+  avatarUpdatedAt: Date,
   profile: {
     phone: { type: String, default: '' }, gender: { type: String, default: '' },
     dateOfBirth: { type: String, default: '' }, country: { type: String, default: '' },
@@ -13,5 +16,5 @@ const userSchema = new mongoose.Schema({
   },
 }, { timestamps: true });
 
-userSchema.set('toJSON', { transform(_doc, value) { delete value.passwordHash; delete value.__v; return value; } });
+userSchema.set('toJSON', { transform(_doc, value) { delete value.passwordHash; delete value.avatarData; delete value.avatarMime; delete value.__v; return value; } });
 export const User = mongoose.model('User', userSchema);
