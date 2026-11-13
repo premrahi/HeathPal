@@ -12,6 +12,8 @@ import Dashboard from './pages/Dashboard';
 import Profile from './pages/Profile';
 import Vitals from './pages/Vitals';
 import Reports from './pages/Reports';
+import ReportDetail from './pages/ReportDetail';
+import Insights from './pages/Insights';
 
 export function Brand() { return <Link to="/" className="brand" aria-label="HealthPal home"><span className="brand-icon"><Plus size={25} /></span>HealthPal<span className="brand-dot">.</span></Link>; }
 function RouteFocus() {
@@ -45,7 +47,6 @@ function Workspace() {
     <div className="workspace-main"><header className="workspace-topbar"><span>Your personal health companion</span><span className="privacy-pill">Private workspace</span></header><main id="main" tabIndex={-1} className="content"><Outlet /></main><footer className="workspace-footer">HealthPal · One step toward a clearer health story.</footer></div>
   </div>;
 }
-function Pending() { return <Empty title="Your health space" description="This module is being connected to your account." />; }
 function NotFound() { return <div className="center-card"><Empty title="This page wandered off." description="Let’s get you back to your health space."><ButtonLink to="/">Back home</ButtonLink></Empty></div>; }
 class ErrorBoundary extends Component {
   state = { failed: false };
@@ -60,7 +61,7 @@ export default function App() {
     <Route path="/verify-email" element={<Recovery key="verify" mode="verify" />} />
     <Route path="/forgot-password" element={<Recovery key="forgot" mode="forgot" />} />
     <Route path="/reset-password" element={<Recovery key="reset" mode="reset" />} />
-    <Route element={<Protected />}><Route path="/app" element={<Workspace />}><Route index element={<Navigate to="dashboard" replace />} />{navigation.map(([path]) => <Route key={path} path={path} element={path === 'settings' ? <SettingsPage /> : path === 'dashboard' ? <Dashboard /> : path === 'profile' ? <Profile /> : path === 'vitals' ? <Vitals /> : path === 'reports' ? <Reports /> : <Pending />} />)}<Route path="reports/:id" element={<Pending />} /></Route></Route>
+    <Route element={<Protected />}><Route path="/app" element={<Workspace />}><Route index element={<Navigate to="dashboard" replace />} /><Route path="dashboard" element={<Dashboard />} /><Route path="reports" element={<Reports />} /><Route path="reports/:id" element={<ReportDetail />} /><Route path="vitals" element={<Vitals />} /><Route path="insights" element={<Insights />} /><Route path="profile" element={<Profile />} /><Route path="settings" element={<SettingsPage />} /></Route></Route>
     <Route path="*" element={<NotFound />} />
   </Routes></AuthProvider></ToastProvider></BrowserRouter></ErrorBoundary>;
 }
