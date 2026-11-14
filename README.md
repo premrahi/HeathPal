@@ -1,32 +1,59 @@
 # HealthPal
 
-A basic MERN skeleton: MongoDB and Mongoose, an Express API on Node.js, and a React frontend built with Vite.
+A MERN personal health organizer built from a clean scaffold, with the local HealthMate-Ai-Integration clone used as a reference for feature scope. The frontend uses React and Vite; the API uses Express, Node.js, MongoDB, and Mongoose.
 
-This is a fresh scaffold. The existing `HealthMate-Ai-Integration/` reference clone stays local and is excluded from this repository.
+## Features
 
-## Local setup
+- Signup, email verification, login, logout, and persistent private sessions
+- Password recovery and password changes with session revocation
+- Personal and health profiles, including private profile photos
+- Vitals journal: blood pressure, glucose, weight, pulse, notes, edit/delete, and charts
+- Private PDF/image report uploads, search, pagination, downloads, and deletion
+- Optional consent-based Gemini explanations in English and Roman Urdu
+- Personal dashboard, report history, and AI insights library
+- Responsive layouts, loading/error/empty states, keyboard navigation, and exact chart data
 
-Use Node.js 22.12 or newer and a local MongoDB instance or MongoDB Atlas connection.
+## Start locally
 
-1. Run `npm run setup` from the repository root.
-2. Copy `backend/.env.example` to `backend/.env` and set `MONGO_URI`.
-3. Start MongoDB, then run `npm run dev`.
-4. Open http://localhost:5173. The API runs on http://localhost:5000.
+Prerequisites: Node.js 22.12+ (Node 24 used for validation) and local MongoDB or a MongoDB Atlas connection.
 
-The frontend proxies `/api` to the local backend. Run `npm run build` for the frontend production bundle, `npm run test` for API smoke tests, and `npm start` to run the API without watch mode. Production frontend hosting and routing to `/api` must be configured separately.
+```powershell
+npm run setup
+Copy-Item backend/.env.example backend/.env
+```
 
-## Structure
+Edit `backend/.env` and set `MONGO_URI`. Then start MongoDB and run:
 
-- `frontend/src/`: React app and styles
-- `backend/src/app.js`: Express middleware and routes
-- `backend/src/server.js`: database connection and HTTP startup
-- `backend/src/config/`: MongoDB connection
-- `backend/src/models/`: starter Mongoose models
-- `backend/src/routes/`: API routes
+```powershell
+npm run dev
+```
 
-`GET /api/health` reports API and database availability. The API starts only after MongoDB connects.
+Open http://localhost:5173. The API runs at http://localhost:5000. Development verification/reset codes appear in the API terminal (`MAIL_MODE=console`). No email account is required for local development.
 
-Authentication, report uploads, AI analysis, and vitals tracking are future work; the interface labels these as planned features. No patient data endpoints are exposed by this skeleton.
+Gemini is optional: set `GEMINI_API_KEY` in `backend/.env` and restart the API to enable report explanations. Uploads and downloads work without it. A report is sent to Google only after the user checks the consent box and requests analysis.
 
-Commits record the actual creation of this scaffold, using their real timestamps.
+## Verification
 
+```powershell
+npm test
+npm run build
+npm run browser:install
+npm run test:e2e
+npm run format:check
+```
+
+API integration tests use an ephemeral MongoDB process, not your configured database. On the first run, mongodb-memory-server downloads MongoDB into `backend/.cache`. Browser tests launch their own API and Vite servers, use an isolated database and captured development mail, and replace Gemini with a deterministic test response. They cover signup, verification, profile persistence, vitals editing, report upload/download, AI consent, bilingual explanations, mobile navigation, and logout. Live SMTP and Gemini delivery require your own credentials and are not exercised by these automated tests.
+
+Browser installation downloads Chromium into `.cache/playwright`. Keep ports 5000 and 5173 free while running browser tests. Screenshots/traces appear under `frontend/test-results` when generated. No patient data, browser binaries, test databases, or secrets are committed.
+
+## Production
+
+`npm run build` creates the frontend bundle. With `NODE_ENV=production`, `npm start` serves both the bundle and API. Production requires an HTTPS `CLIENT_URL`, MongoDB, and SMTP configuration. A Dockerfile and GitHub Actions verification workflow are included.
+
+See [API routes](docs/API.md), [architecture and deployment](docs/ARCHITECTURE.md), and [implementation milestones](docs/BUILD_PLAN.md).
+
+## Reference and history
+
+Feature reference: https://github.com/G-Mustafa1/HealthMate-Ai-Integration at commit `ac5f8c5`. The original local clone is preserved separately. This repository implements the MERN version anew; no claim is made that the upstream project was authored here.
+
+The Git history records the actual implementation stages with real timestamps. AI explanations are informational, may be inaccurate, and do not replace professional medical care.

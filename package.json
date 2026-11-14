@@ -7,12 +7,17 @@
     "build": "npm run build --prefix frontend",
     "start": "npm run start --prefix backend",
     "test": "npm run test --prefix backend",
-    "setup": "npm install && npm install --prefix backend && npm install --prefix frontend"
+    "setup": "npm install && npm install --prefix backend && npm install --prefix frontend",
+    "test:e2e": "npm run test:e2e --prefix frontend",
+    "browser:install": "node scripts/install-browser.mjs",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
   },
   "engines": {
     "node": ">=22.12.0"
   },
   "devDependencies": {
-    "concurrently": "^10.0.7"
+    "concurrently": "^10.0.7",
+    "prettier": "^3.10.1"
   }
 }
