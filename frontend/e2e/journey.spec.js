@@ -1,27 +1,41 @@
 import { test, expect } from '@playwright/test';
 
-test('complete account, profile, vitals, report, analysis and logout journey', async ({ page, request }, testInfo) => {
-  const errors = []; page.on('pageerror', error => errors.push(error.message));
+async function snapshot(page, path) {
+  const dismiss = page.getByRole('button', { name: 'Dismiss notification' });
+  if (await dismiss.isVisible()) await dismiss.click();
+  await page.evaluate(() => window.scrollTo(0, 0));
+  await page.screenshot({ path, fullPage: true });
+}
+
+test('complete account, profile, vitals, report, analysis and logout journey', async ({
+  page,
+  request,
+}, testInfo) => {
+  const errors = [];
+  page.on('pageerror', (error) => errors.push(error.message));
   await page.goto('/');
   await expect(page.getByRole('heading', { name: 'Your health, all together.' })).toBeVisible();
-  await page.screenshot({ path: testInfo.outputPath('landing-desktop.png'), fullPage: true });
+  await snapshot(page, testInfo.outputPath('landing-desktop.png'));
   await page.getByRole('link', { name: 'Get started', exact: false }).first().click();
   await page.getByLabel('Full name').fill('Jamie Test');
   await page.getByLabel('Email address').fill('jamie@example.test');
   await page.getByLabel('Password', { exact: true }).fill('An-example-password42');
   await page.getByRole('button', { name: 'Create account' }).click();
   await expect(page.getByRole('heading', { name: 'Check your inbox.' })).toBeVisible();
-  const mail = await (await request.get('http://127.0.0.1:5000/__test/mail?email=jamie@example.test')).json();
+  const mail = await (
+    await request.get('http://127.0.0.1:5000/__test/mail?email=jamie@example.test')
+  ).json();
   await page.getByLabel('6-digit code').fill(mail.code);
   await page.getByRole('button', { name: 'Verify email' }).click();
   await expect(page.getByRole('heading', { name: 'Welcome, Jamie.' })).toBeVisible();
-  await page.screenshot({ path: testInfo.outputPath('dashboard-desktop.png'), fullPage: true });
+  await snapshot(page, testInfo.outputPath('dashboard-desktop.png'));
   await page.getByRole('link', { name: 'My profile', exact: true }).click();
   await page.getByLabel('City', { exact: true }).fill('Delhi');
   await page.getByLabel('Blood group').selectOption('O+');
   await page.getByRole('button', { name: 'Save profile' }).click();
   await expect(page.getByRole('status')).toContainText('Profile updated.');
-  await page.reload(); await expect(page.getByLabel('City', { exact: true })).toHaveValue('Delhi');
+  await page.reload();
+  await expect(page.getByLabel('City', { exact: true })).toHaveValue('Delhi');
   await page.getByRole('link', { name: 'Vitals tracker', exact: true }).click();
   await page.getByRole('button', { name: 'Record a measurement' }).click();
   await page.getByLabel('Systolic pressure (mmHg)').fill('120');
@@ -35,20 +49,26 @@ test('complete account, profile, vitals, report, analysis and logout journey', a
   await expect(page.getByRole('cell', { name: '71', exact: true })).toBeVisible();
   await page.getByRole('link', { name: 'Medical reports', exact: true }).click();
   await page.getByRole('button', { name: 'Upload report', exact: true }).click();
-  await page.locator('#report-file').setInputFiles({ name: 'blood-test.pdf', mimeType: 'application/pdf', buffer: Buffer.from('%PDF-1.4\n% test fixture\n%%EOF') });
+  await page.locator('#report-file').setInputFiles({
+    name: 'blood-test.pdf',
+    mimeType: 'application/pdf',
+    buffer: Buffer.from('%PDF-1.4\n% test fixture\n%%EOF'),
+  });
   await page.getByLabel('Report title').fill('Annual blood test');
   await page.getByRole('button', { name: 'Save report' }).click();
   await expect(page.getByRole('heading', { name: 'Annual blood test', exact: true })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Explain this report' })).toBeDisabled();
   await page.getByRole('checkbox').check();
   await page.getByRole('button', { name: 'Explain this report' }).click();
-  await expect(page.getByText('A sample blood test report, used for automated testing.')).toBeVisible();
+  await expect(
+    page.getByText('A sample blood test report, used for automated testing.'),
+  ).toBeVisible();
   await page.getByRole('button', { name: 'Roman Urdu', exact: true }).click();
   await expect(page.getByText(/Is namoona report/)).toBeVisible();
   const downloadPromise = page.waitForEvent('download');
   await page.getByRole('link', { name: 'Download original' }).click();
   expect((await downloadPromise).suggestedFilename()).toBe('blood-test.pdf');
-  await page.screenshot({ path: testInfo.outputPath('report-desktop.png'), fullPage: true });
+  await snapshot(page, testInfo.outputPath('report-desktop.png'));
   await page.getByRole('link', { name: 'AI insights', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Annual blood test' })).toBeVisible();
   await page.setViewportSize({ width: 390, height: 844 });
@@ -56,8 +76,10 @@ test('complete account, profile, vitals, report, analysis and logout journey', a
   await page.getByRole('link', { name: 'Overview', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Welcome, Jamie.' })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Open navigation' })).toBeVisible();
-  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
-  await page.screenshot({ path: testInfo.outputPath('dashboard-mobile.png'), fullPage: true });
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(
+    true,
+  );
+  await snapshot(page, testInfo.outputPath('dashboard-mobile.png'));
   await page.getByRole('button', { name: 'Open navigation' }).click();
   await page.getByRole('button', { name: 'Sign out', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Welcome back.' })).toBeVisible();

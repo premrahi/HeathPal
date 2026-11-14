@@ -6,18 +6,34 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const refresh = useCallback(async () => {
-    setLoading(true); setError(null);
-    try { const data = await api('/auth/me'); setUser(data.user); }
-    catch (err) { setUser(null); if (err.status !== 401) setError(err); }
-    finally { setLoading(false); }
+    setLoading(true);
+    setError(null);
+    try {
+      const data = await api('/auth/me');
+      setUser(data.user);
+    } catch (err) {
+      setUser(null);
+      if (err.status !== 401) setError(err);
+    } finally {
+      setLoading(false);
+    }
   }, []);
-  useEffect(() => { refresh(); }, [refresh]);
+  useEffect(() => {
+    refresh();
+  }, [refresh]);
   useEffect(() => {
     const invalidate = () => setUser(null);
     window.addEventListener('healthpal:unauthorized', invalidate);
     return () => window.removeEventListener('healthpal:unauthorized', invalidate);
   }, []);
-  async function logout() { await api('/auth/logout', { method: 'POST' }); setUser(null); }
-  return <AuthContext.Provider value={{ user, setUser, loading, error, refresh, logout }}>{children}</AuthContext.Provider>;
+  async function logout() {
+    await api('/auth/logout', { method: 'POST' });
+    setUser(null);
+  }
+  return (
+    <AuthContext.Provider value={{ user, setUser, loading, error, refresh, logout }}>
+      {children}
+    </AuthContext.Provider>
+  );
 }
 export const useAuth = () => useContext(AuthContext);

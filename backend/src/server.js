@@ -8,7 +8,8 @@ try {
   validateEnvironment();
   await connectDatabase(config.mongoUri);
   const port = config.port;
-  if (config.mailMode === 'console') console.log('Development email codes are printed in this terminal.');
+  if (config.mailMode === 'console')
+    console.log('Development email codes are printed in this terminal.');
   const server = app.listen(port, () => console.log(`API listening on http://localhost:${port}`));
   server.on('error', async (error) => {
     console.error('HTTP startup failed:', error.message);

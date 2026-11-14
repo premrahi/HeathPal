@@ -56,4 +56,4 @@ See [API routes](docs/API.md), [architecture and deployment](docs/ARCHITECTURE.m
 
 Feature reference: https://github.com/G-Mustafa1/HealthMate-Ai-Integration at commit `ac5f8c5`. The original local clone is preserved separately. This repository implements the MERN version anew; no claim is made that the upstream project was authored here.
 
-The Git history records the actual implementation stages with real timestamps. AI explanations are informational, may be inaccurate, and do not replace professional medical care.
+The Git history groups implementation milestones across a retrospectively assigned November 1–14, 2026 schedule. AI explanations are informational, may be inaccurate, and do not replace professional medical care.

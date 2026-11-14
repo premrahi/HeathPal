@@ -16,10 +16,14 @@ test('API returns unavailable database status and a JSON 404', async () => {
     assert.equal(missing.status, 404);
     assert.deepEqual(await missing.json(), { message: 'Route not found' });
     const malformed = await fetch(`${base}/api/missing`, {
-      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{',
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: '{',
     });
     assert.equal(malformed.status, 400);
   } finally {
-    await new Promise((resolve, reject) => server.close(error => error ? reject(error) : resolve()));
+    await new Promise((resolve, reject) =>
+      server.close((error) => (error ? reject(error) : resolve())),
+    );
   }
 });

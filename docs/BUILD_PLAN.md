@@ -16,6 +16,6 @@ Code is implemented anew; the reference informs feature scope and user journeys.
 10. Auth, profile, vitals, reports, dashboard, and insights screens
 11. Integration tests, accessibility, deployment, and setup documentation
 
-Each commit records a concrete implementation stage at its actual timestamp.
+Each commit records a concrete implementation stage on the retrospectively assigned November 1–14, 2026 schedule.
 External services require MongoDB, SMTP (or development console mail), and an
 optional Gemini API key. Analysis is an explicit opt-in action per report.

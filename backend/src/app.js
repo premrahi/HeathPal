@@ -15,18 +15,38 @@ import { dashboardRouter } from './routes/dashboard.js';
 import { notFound, errorHandler, ApiError } from './lib/errors.js';
 
 export const app = express();
+if (config.trustProxy) app.set('trust proxy', 1);
 app.disable('x-powered-by');
 app.use(helmet());
-app.use(cors({ origin: config.clientUrl, credentials: true, allowedHeaders: ['Content-Type', 'X-HealthPal'] }));
-app.use('/api', (_req, res, next) => { res.set('Cache-Control', 'no-store'); next(); });
-app.use('/api', rateLimit({ windowMs: 60000, limit: 180, standardHeaders: 'draft-8', legacyHeaders: false,
-  message: { message: 'Too many requests. Please wait a minute.' } }));
+app.use(
+  cors({
+    origin: config.clientUrl,
+    credentials: true,
+    allowedHeaders: ['Content-Type', 'X-HealthPal'],
+  }),
+);
+app.use('/api', (_req, res, next) => {
+  res.set('Cache-Control', 'no-store');
+  next();
+});
+app.use(
+  '/api',
+  rateLimit({
+    windowMs: 60000,
+    limit: 180,
+    standardHeaders: 'draft-8',
+    legacyHeaders: false,
+    message: { message: 'Too many requests. Please wait a minute.' },
+  }),
+);
 app.use(express.json({ limit: '1mb' }));
 app.use(cookieParser());
 app.use('/api', (req, _res, next) => {
   if (!['GET', 'HEAD', 'OPTIONS'].includes(req.method)) {
-    if (req.get('X-HealthPal') !== '1') throw new ApiError(403, 'Missing request verification header.');
-    if (req.get('Origin') && req.get('Origin') !== new URL(config.clientUrl).origin) throw new ApiError(403, 'Request origin is not allowed.');
+    if (req.get('X-HealthPal') !== '1')
+      throw new ApiError(403, 'Missing request verification header.');
+    if (req.get('Origin') && req.get('Origin') !== new URL(config.clientUrl).origin)
+      throw new ApiError(403, 'Request origin is not allowed.');
   }
   next();
 });

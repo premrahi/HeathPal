@@ -7,10 +7,24 @@ const cookieOptions = { httpOnly: true, secure: config.production, sameSite: 'st
 export async function createSession(user, res) {
   const token = randomToken();
   const maxAge = config.sessionDays * 86400000;
-  await Session.create({ user: user._id, tokenHash: digest(token), expiresAt: new Date(Date.now() + maxAge) });
+  await Session.create({
+    user: user._id,
+    tokenHash: digest(token),
+    expiresAt: new Date(Date.now() + maxAge),
+  });
   res.cookie(cookieName, token, { ...cookieOptions, maxAge });
 }
-export function clearSessionCookie(res) { res.clearCookie(cookieName, cookieOptions); }
+export function clearSessionCookie(res) {
+  res.clearCookie(cookieName, cookieOptions);
+}
 export function publicUser(user) {
-  return { _id: user._id, name: user.name, email: user.email, verifiedAt: user.verifiedAt, profile: user.profile, createdAt: user.createdAt, avatarUpdatedAt: user.avatarUpdatedAt };
+  return {
+    _id: user._id,
+    name: user.name,
+    email: user.email,
+    verifiedAt: user.verifiedAt,
+    profile: user.profile,
+    createdAt: user.createdAt,
+    avatarUpdatedAt: user.avatarUpdatedAt,
+  };
 }
